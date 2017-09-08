@@ -7,10 +7,6 @@ Another use case would be to build a benchmarking routine into a program that af
 
 If using hardware counters (PMU), which are limited in number (to about four, but this depends on CPU and event type), it's possible to count one type for a certain section of code, and count another event type in another section, without the need for event multiplexing.
 
-Since the measurement is invasive and at runtime it can be conditionally triggered under a certain runtime condition. (see ScopedEventTrigger ctor second arg)
-
-
-
 
 Since this library uses Linux Performance Events, it naturally only works under Linux.
 
@@ -34,9 +30,7 @@ jsplib::perf::ScopedEventTrigger trig { &perf_counter };
 // ...
 }
 
-Currently the LPE is created and *started*
-
-To minimise system calls, and therefore the overhead of context switches, all the events passed to the PerfEventCount are initilised as a group - this also means that they can be compared directly, so in the example above the count of HW_CACHE_REFERENCES can be compared against HW_CACHE_MISSES, and the same is true of the example below:
+To minimise system calls, and therefore the overhead of context switches, all the events passed to the PerfEventCount are initialised as a group - this also means that they can be compared directly, so in the example above the count of HW_CACHE_REFERENCES can be compared against HW_CACHE_MISSES, and the same is true of the example below:
 
 jsplib::perf::PerfEventCount perf_counter {
 		{ cev::HW_CACHE_L1D, 	copid::HW_CACHE_OP_READ,	copres::HW_CACHE_RESULT_ACCESS },
@@ -44,6 +38,8 @@ jsplib::perf::PerfEventCount perf_counter {
 };
 
 Here we're counting events in the Level 1 data cache only.
+
+// README need more work, including...
 
 
 There is also jsplib::perf::WallTimeEvent
