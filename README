@@ -19,22 +19,26 @@ The basic usage is simple:
 using pehs = jsplib::perf::linux_perf_event_counter_t::HWSW_EVENT_T;
 
 jsplib::perf::PerfEventCount perf_counter {
-		{ pehs::HW_CACHE_REFERENCES  },
-		{ pehs::HW_CACHE_MISSES },
-		{ pehs::HW_REF_CPU_CYCLES }
-	};
-	
+	{ pehs::HW_CACHE_REFERENCES  }, { pehs::HW_CACHE_MISSES }, { pehs::HW_REF_CPU_CYCLES }
+};
+
 {
 jsplib::perf::ScopedEventTrigger trig { &perf_counter };
 // code to profile
 // ...
 }
+std::cout << \
+perf_counter.getDescription(0) << " : " << perf_counter.getValue( 0 ) << '\t' << \
+perf_counter.getDescription(1) << " : " << perf_counter.getValue( 1 ) << \
+"\tratio: " << 100.0 * perf_counter.getRatio( 1, 0 ) << " %\n";
+std::cout << perf_counter.getDescription ( 2 ) << " : " << perf_counter.getValue( 2 ) << '\n';
+std::cout << "Multiplexing scaling factor: " << perf_counter.getLastScaling() << '\n';
 
 To minimise system calls, and therefore the overhead of context switches, all the events passed to the PerfEventCount are initialised as a group - this also means that they can be compared directly, so in the example above the count of HW_CACHE_REFERENCES can be compared against HW_CACHE_MISSES, and the same is true of the example below:
 
 jsplib::perf::PerfEventCount perf_counter {
-		{ cev::HW_CACHE_L1D, 	copid::HW_CACHE_OP_READ,	copres::HW_CACHE_RESULT_ACCESS },
-		{ cev::HW_CACHE_L1D, 	copid::HW_CACHE_OP_READ,	copres::HW_CACHE_RESULT_MISS },
+	{ cev::HW_CACHE_L1D, 	copid::HW_CACHE_OP_READ,	copres::HW_CACHE_RESULT_ACCESS },
+	{ cev::HW_CACHE_L1D, 	copid::HW_CACHE_OP_READ,	copres::HW_CACHE_RESULT_MISS },
 };
 
 Here we're counting events in the Level 1 data cache only.
