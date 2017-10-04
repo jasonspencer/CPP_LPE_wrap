@@ -16,8 +16,8 @@ There are two main classes: jsplib::perf::PerfEventCount and jsplib::perf::Scope
 PerfEventCount holds the counter details, and the count, while ScopedEventTrigger is a class that starts and stops the counting when it is created and destroyed.
 
 The basic usage is simple:
-using pehs = jsplib::perf::linux_perf_event_counter_t::HWSW_EVENT_T;
 
+using pehs = jsplib::perf::linux_perf_event_counter_t::HWSW_EVENT_T;
 jsplib::perf::PerfEventCount perf_counter {
 	{ pehs::HW_CACHE_REFERENCES  }, { pehs::HW_CACHE_MISSES }, { pehs::HW_REF_CPU_CYCLES }
 };
@@ -25,7 +25,7 @@ jsplib::perf::PerfEventCount perf_counter {
 {
 jsplib::perf::ScopedEventTrigger trig { &perf_counter };
 // code to profile
-// ...
+
 }
 std::cout << \
 perf_counter.getDescription(0) << " : " << perf_counter.getValue( 0 ) << '\t' << \
