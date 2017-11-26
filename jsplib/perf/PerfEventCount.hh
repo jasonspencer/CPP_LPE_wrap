@@ -34,7 +34,6 @@ static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid, int cpu
 
 }
 
-// TODO test and handle scaling
 // TODO reimplement groups - if users want many events they can have multiple PerfEventcount objects
 // http://sandsoftwaresound.net/perf/perf-tutorial-hot-spots/
 // http://sandsoftwaresound.net/perf/perf-tut-profile-hw-events/
@@ -75,7 +74,7 @@ struct linux_perf_event_counter_t {
 	__u32 m_type;
 	float m_last_read_scaling_factor;
 	int m_fd;
-	bool m_noop;	// TODO handle noop properly. it's included so PerfCountEvent can be default constructed.
+	bool m_noop;
 
 	const static std::pair< std::pair<__u32,__u64>, const char * > event_names_lut[];
 
@@ -168,13 +167,8 @@ std::cout << "m_read_buf_size is " << m_read_buf_size << std::endl;
 std::cout << "sizeof(read_format_group) is " << sizeof(read_format_group) << std::endl;
 std::cout << "sizeof(read_format_group_counter) is " << sizeof(read_format_group_counter) << std::endl;
 */
-//	std::copy ( evs.begin(), evs.end(), m_evs.begin() );
 	std::copy_if( evs.begin(), evs.end(), m_evs.begin(), [](const linux_perf_event_counter_t & e){ return (!e.m_noop ); } );
 	// check for duplicates
-/*	for ( auto i = m_evs.begin(); i != m_evs.end(); ++i ) {
-		for ( auto j = std::next(i); j != m_evs.end(); ++j )
-			if ( i->sameEvent(*j) ) throw std::invalid_argument("Duplicate event types discovered in CPerfEventCount::CPerfEventCount( ... )");
-	} */
 	for(unsigned i = 0; i < m_nevs; ++i) {
 		for(unsigned j = i+1; j < m_nevs; ++j)
 			if ( m_evs[i].sameEvent(m_evs[j]) ) throw std::invalid_argument("Duplicate event types discovered in CPerfEventCount::CPerfEventCount( ... )");
