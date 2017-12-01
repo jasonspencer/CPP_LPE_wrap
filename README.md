@@ -23,6 +23,84 @@ Another use case would be to build a benchmarking routine into a program that af
 
 If using hardware counters (PMUs), which are limited in number (to about four, but this depends on CPU and event type), it is possible to count one type for a certain section of code, and count another event type in another section, without the need for event multiplexing.
 
+## Available counters and their configuration
+
+The constructor for **jsplib::perf::PerfEventCount** takes a single argument - an initializer_list of **jsplib::perf::linux\_perf\_event\_counter\_t** objects.  These objects encapsulate the configuration of the event counter, be it hardware or software events.
+
+Please read the [man page for perf\_event\_open](http://man7.org/linux/man-pages/man1/perf.1.html) to understand the events types.  **CPP\_LPE\_wrap** supports events of type **PERF\_TYPE\_HARDWARE**, **PERF\_TYPE\_SOFTWARE**, **PERF\_TYPE\_HW\_CACHE** and **PERF\_TYPE\_RAW**.
+
+### PERF\_TYPE\_HARDWARE and PERF\_TYPE\_SOFTWARE events
+
+One of the **linux\_perf\_event\_counter\_t** constructors takes a value from the **HWSW\_EVENT\_T** enum - which map from the the values in the Linux kernel header (and listed on the man page), but without the **PERF\_COUNT\_** prefix, so:
+
+**PERF\_COUNT\_SW\_CONTEXT\_SWITCHES** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWSW\_EVENT\_T::SW\_CONTEXT\_SWITCHES**
+
+**PERF\_COUNT\_HW\_BRANCH\_MISSES** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWSW\_EVENT\_T::HW\_BRANCH\_MISSES**.
+
+Currently the accepted tokens from the jsplib::perf::linux\_perf\_event\_counter\_t::HWSW\_EVENT\_T enum are:
+
+* HW\_CPU\_CYCLES
+* HW\_INSTRUCTIONS
+* HW\_CACHE\_REFERENCES
+* HW\_CACHE\_MISSES
+* HW\_BRANCH\_INSTRUCTIONS
+* HW\_BRANCH\_MISSES
+* HW\_BUS\_CYCLES
+* HW\_STALLED\_CYCLES\_FRONTEND
+* HW\_STALLED\_CYCLES\_BACKEND
+* HW\_REF\_CPU\_CYCLES
+* SW\_CPU\_CLOCK
+* SW\_TASK\_CLOCK
+* SW\_PAGE\_FAULTS
+* SW\_CONTEXT\_SWITCHES
+* SW\_CPU\_MIGRATIONS
+* SW\_PAGE\_FAULTS\_MIN
+* SW\_PAGE\_FAULTS\_MAJ
+* SW\_ALIGNMENT\_FAULTS
+* SW\_EMULATION\_FAULTS
+
+### PERF\_TYPE\_HW\_CACHE events
+
+Another **linux\_perf\_event\_counter\_t** constructor takes three enums which map from the hardware cache event names in the man page prefixed by **PERF\_COUNT\_HW\_CACHE\_**.
+
+**PERF\_COUNT\_HW\_CACHE\_L1D** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_EVENT\_T::HW\_CACHE\_L1D**
+
+**PERF\_COUNT\_HW\_CACHE\_OP\_READ** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPID\_EVENT\_T::HW\_CACHE\_OP\_READ**
+
+**PERF\_COUNT\_HW\_CACHE\_RESULT\_ACCESS** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPRESULT\_EVENT\_T::HW\_CACHE\_RESULT\_ACCESS**
+
+Currently the first enum (jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_EVENT\_T) accepted tokens are:
+
+* HW\_CACHE\_L1D
+* HW\_CACHE\_L1I
+* HW\_CACHE\_LL
+* HW\_CACHE\_DTLB
+* HW\_CACHE\_ITLB
+* HW\_CACHE\_BPU
+* HW\_CACHE\_NODE
+
+The second token from jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPID\_EVENT\_T is one of:
+
+* HW\_CACHE\_OP\_READ
+* HW\_CACHE\_OP\_WRITE
+* HW\_CACHE\_OP\_PREFETCH
+
+And the third token from jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPRESULT\_EVENT\_T is:
+
+* HW\_CACHE\_RESULT\_ACCESS
+* HW\_CACHE\_RESULT\_MISS
+
+### PERF\_TYPE\_RAW events
+
+There is also a constructor to which you can supply raw configuration values as per a call to **perf\_event\_open** with type **PERF\_TYPE\_RAW**.
+
+### Event grouping
+
+All events listed in the **jsplib::perf::PerfEventCount** constructor are grouped together, and when the counter is triggered all the events are passed to the OS as a group and all start counting together.
+
+Once constructed the **jsplib::perf::PerfEventCount** contains the running count for the configured event types and can be interrogated with ::getValue( index ) and ::getDescription( index ), where index is the zero based index into the events listed in the intializer_list passed to the constructor.
+
+
 ## Usage
 
 There are two main classes: **jsplib::perf::PerfEventCount** and **jsplib::perf::ScopedEventTrigger**.
@@ -62,76 +140,10 @@ To minimise system calls, and therefore the overhead of context switches, all th
 
 Here we have configured perf_counter to count access and miss events in the Level 1 data cache only.
 
-## Available counters and their configuration
+See the example in [example/transpose.cc](blob/master/example/transpose.cc) to see how **jsplib::perf::ScopedEventTrigger** can be used and the different event counter configuration options.
 
-The constructor for **jsplib::perf::PerfEventCount** takes a single argument - an initializer_list of **jsplib::perf::linux\_perf\_event\_counter\_t** objects.  These objects encapsulate the configuration of the event counter, be it hardware or software events.
+[tree/master/testing](tree/master/testing) also has a number of usage scenarios and performance testing of the wrapper itself.
 
-Please read the [man page for perf\_event\_open](http://man7.org/linux/man-pages/man1/perf.1.html) to understand the events types.  **CPP\_LPE\_wrap** supports events of type **PERF\_TYPE\_HARDWARE**, **PERF\_TYPE\_SOFTWARE**, **PERF\_TYPE\_HW\_CACHE** and **PERF\_TYPE\_RAW**.
-
-<br />
-
-One of the **linux\_perf\_event\_counter\_t** constructors takes a value from the **HWSW\_EVENT\_T** enum - which map from the the values in the Linux kernel header (and listed on the man page), but without the **PERF\_COUNT\_** prefix, so:
-
-**PERF\_COUNT\_SW\_CONTEXT\_SWITCHES** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWSW\_EVENT\_T::SW\_CONTEXT\_SWITCHES**
-
-**PERF\_COUNT\_HW\_BRANCH\_MISSES** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWSW\_EVENT\_T::HW\_BRANCH\_MISSES**.
-
-Currently the accepted tokens from the jsplib::perf::linux\_perf\_event\_counter\_t::HWSW\_EVENT\_T enum are:
-
-* HW\_CPU\_CYCLES
-* HW\_INSTRUCTIONS
-* HW\_CACHE\_REFERENCES
-* HW\_CACHE\_MISSES
-* HW\_BRANCH\_INSTRUCTIONS
-* HW\_BRANCH\_MISSES
-* HW\_BUS\_CYCLES
-* HW\_STALLED\_CYCLES\_FRONTEND
-* HW\_STALLED\_CYCLES\_BACKEND
-* HW\_REF\_CPU\_CYCLES
-* SW\_CPU\_CLOCK
-* SW\_TASK\_CLOCK
-* SW\_PAGE\_FAULTS
-* SW\_CONTEXT\_SWITCHES
-* SW\_CPU\_MIGRATIONS
-* SW\_PAGE\_FAULTS\_MIN
-* SW\_PAGE\_FAULTS\_MAJ
-* SW\_ALIGNMENT\_FAULTS
-* SW\_EMULATION\_FAULTS
-
-Another **linux\_perf\_event\_counter\_t** constructor takes three enums which map from the hardware cache event names in the man page prefixed by **PERF\_COUNT\_HW\_CACHE\_**.
-
-**PERF\_COUNT\_HW\_CACHE\_L1D** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_EVENT\_T::HW\_CACHE\_L1D**
-
-**PERF\_COUNT\_HW\_CACHE\_OP\_READ** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPID\_EVENT\_T::HW\_CACHE\_OP\_READ**
-
-**PERF\_COUNT\_HW\_CACHE\_RESULT\_ACCESS** becomes **jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPRESULT\_EVENT\_T::HW\_CACHE\_RESULT\_ACCESS**
-
-Currently the first enum (jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_EVENT\_T) accepted tokens are:
-
-* HW\_CACHE\_L1D
-* HW\_CACHE\_L1I
-* HW\_CACHE\_LL
-* HW\_CACHE\_DTLB
-* HW\_CACHE\_ITLB
-* HW\_CACHE\_BPU
-* HW\_CACHE\_NODE
-
-The second token from jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPID\_EVENT\_T is one of:
-
-* HW\_CACHE\_OP\_READ
-* HW\_CACHE\_OP\_WRITE
-* HW\_CACHE\_OP\_PREFETCH
-
-And the third token from jsplib::perf::linux\_perf\_event\_counter\_t::HWCACHE\_OPRESULT\_EVENT\_T is:
-
-* HW\_CACHE\_RESULT\_ACCESS
-* HW\_CACHE\_RESULT\_MISS
-
-There is also a constructor to which you can supply raw configuration values as per a call to **perf\_event\_open** with type **PERF\_TYPE\_RAW**.
-
-All events listed in the **jsplib::perf::PerfEventCount** constructor are grouped together, and when the counter is triggered all the events are passed to the OS as a group and all start counting together.
-
-Once constructed the **jsplib::perf::PerfEventCount** contains the running count for the configured event types and can be interrogated with ::getValue( index ) and ::getDescription( index ), where index is the zero based index into the events listed in the intializer_list passed to the constructor.
 
 ## WallTimeEvent
 
