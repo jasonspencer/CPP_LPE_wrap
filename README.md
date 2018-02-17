@@ -124,8 +124,8 @@ The basic usage is simple:
 	// code to profile
 	}
 	
-	std::cout << pc.desc ( 0 ) << " : " << pc.val ( 0 ) << '\t' << pc.desc ( 1 ) << " : " << pc.val ( 1 ) << "\tratio: " << 100.0 * pc.getRatio ( 1, 0 ) << " %\n";
-	std::cout << pc.desc ( 2 ) << " : " << pc.val ( 2 ) << '\t' << pc.desc ( 3 ) << " : " << pc.val ( 3 ) << "\tratio: " << 100.0 * pc.getRatio ( 3, 2 ) << " %\n";
+	std::cout << pc.desc ( 0 ) << " : " << pc.val ( 0 ) << '\t' << pc.desc ( 1 ) << " : " << pc.val ( 1 ) << "\tratio: " << 100.0 * pc.ratio ( 1, 0 ) << " %\n";
+	std::cout << pc.desc ( 2 ) << " : " << pc.val ( 2 ) << '\t' << pc.desc ( 3 ) << " : " << pc.val ( 3 ) << "\tratio: " << 100.0 * pc.ratio ( 3, 2 ) << " %\n";
 	std::cout << pc.desc ( 4 ) << " : " << pc.val ( 4 ) << '\n';
 	std::cout << pc.desc ( 5 ) << " : " << pc.val ( 5 ) << '\n';
 
