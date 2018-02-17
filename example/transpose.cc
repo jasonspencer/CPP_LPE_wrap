@@ -55,7 +55,7 @@ void printAllCounters ( jsplib::perf::PerfEventCount & pec ) {
 	std::cout << "Scaling: " << pec.getLastScaling() << '\n';
 	}
 
-template <typename NATIVE> NATIVE * align_to( NATIVE * p, const unsigned alignsize ) {
+template <typename NATIVE> NATIVE * align_to( NATIVE * p, const size_t alignsize ) {
 	uint8_t * uip = reinterpret_cast<uint8_t *>(p);
 	size_t off = reinterpret_cast<size_t>(uip)%alignsize;
 	return reinterpret_cast<NATIVE *>( uip + (alignsize-off));
@@ -73,7 +73,7 @@ std::unique_ptr<dtype[]> uptransposed ( new dtype[w*w+alignpadding] );
 dtype * data = align_to ( updata.get(), alignsize );
 dtype * transposed = align_to ( uptransposed.get(), alignsize );
 
-for ( unsigned a=0; a<w*w; a++ ) data[a] = a;
+for ( unsigned a=0; a<w*w; ++a ) data[a] = a;
 
 jsplib::perf::PerfEventCount perf_counter {
 #ifdef PCCACHESIMPLE

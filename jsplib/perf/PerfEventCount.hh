@@ -257,16 +257,27 @@ void stop() {
 			throw std::invalid_argument(std::string("Error reseting event group after disabling. Error was \"") + strerror(errno) + "\"");
 }
 
-double getRatio ( const unsigned numerator_index, const unsigned denominator_index ) const {
+/* [[deprecated]] */ double getRatio ( const unsigned numerator_index, const unsigned denominator_index ) const {
 	assert ( numerator_index < m_nevs );
 	assert ( denominator_index < m_nevs );
 //	assert ( m_triggered );
 	return ( static_cast<double> ( m_evs[numerator_index].m_count ) / static_cast<double> ( m_evs[denominator_index].m_count) );	// TODO test for div0??
 }
 
-__u64 getValue ( const unsigned counter_index ) const {
+double ratio ( const unsigned numerator_index, const unsigned denominator_index ) const {
+	assert ( numerator_index < m_nevs );
+	assert ( denominator_index < m_nevs );
+	return ( static_cast<double> ( m_evs[numerator_index].m_count ) / static_cast<double> ( m_evs[denominator_index].m_count) );	// TODO test for div0??
+}
+
+/* [[deprecated]] */ __u64 getValue ( const unsigned counter_index ) const {	// prefer ::val(...)
 	assert(counter_index < m_nevs);
 //	assert(m_triggered);
+	return m_evs[counter_index].m_count;
+}
+
+__u64 val ( const unsigned counter_index ) const {
+	assert(counter_index < m_nevs);
 	return m_evs[counter_index].m_count;
 }
 
@@ -288,7 +299,12 @@ unsigned getNumEvents() const {
 	return m_nevs;
 	}
 
-const std::string getDescription( const unsigned counter_index ) const {
+/* [[deprecated]] */ const std::string getDescription( const unsigned counter_index ) const {	// prefer ::desc()
+	assert(counter_index < m_nevs);
+	return m_evs[counter_index].lookup_description();
+}
+
+const std::string desc( const unsigned counter_index ) const {
 	assert(counter_index < m_nevs);
 	return m_evs[counter_index].lookup_description();
 }

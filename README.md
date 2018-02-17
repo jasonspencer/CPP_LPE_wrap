@@ -113,6 +113,9 @@ The basic usage is simple:
 	jsplib::perf::PerfEventCount pc {
 		{ pehs::HW_CACHE_REFERENCES  }, 
 		{ pehs::HW_CACHE_MISSES },
+		{ pehs::HW_BRANCH_INSTRUCTIONS },
+		{ pehs::HW_BRANCH_MISSES },
+		{ pehs::HW_INSTRUCTIONS },
 		{ pehs::HW_REF_CPU_CYCLES }
 	};
 
@@ -121,9 +124,10 @@ The basic usage is simple:
 	// code to profile
 	}
 	
-	std::cout << pc.getDescription ( 0 ) << " : " << pc.getValue ( 0 ) << '\t' << pc.getDescription ( 1 ) << " : " << pc.getValue ( 1 ) << "\tratio: " << 100.0 * pc.getRatio ( 1, 0 ) << " %\n";
-
-	std::cout << pc.getDescription ( 2 ) << " : " << pc.getValue ( 2 ) << '\n';
+	std::cout << pc.desc ( 0 ) << " : " << pc.val ( 0 ) << '\t' << pc.desc ( 1 ) << " : " << pc.val ( 1 ) << "\tratio: " << 100.0 * pc.getRatio ( 1, 0 ) << " %\n";
+	std::cout << pc.desc ( 2 ) << " : " << pc.val ( 2 ) << '\t' << pc.desc ( 3 ) << " : " << pc.val ( 3 ) << "\tratio: " << 100.0 * pc.getRatio ( 3, 2 ) << " %\n";
+	std::cout << pc.desc ( 4 ) << " : " << pc.val ( 4 ) << '\n';
+	std::cout << pc.desc ( 5 ) << " : " << pc.val ( 5 ) << '\n';
 
 	std::cout << "Multiplexing scaling factor: " << pc.getLastScaling() << '\n';
 
@@ -139,6 +143,8 @@ To minimise system calls, and therefore the overhead of context switches, all th
 	};
 
 Here we have configured perf_counter to count access and miss events in the Level 1 data cache only.
+
+Be aware, however that there are a limited number of counters of each type, so while it may be ok to group 6 events in the one group above, on one architecture, it may not be possible to group that many on another architecture, or of another type.
 
 See the example in [example/transpose.cc](blob/master/example/transpose.cc) to see how **jsplib::perf::ScopedEventTrigger** can be used and the different event counter configuration options.
 
@@ -157,4 +163,4 @@ Things that need work:
 
 1. a nicer interface to map event names to strings.
 2. less reliance on explicit template parameters (new C++17 features will help with that).
-
+3. Consider adding PerfEventCount::operator[] and range for loop support.
